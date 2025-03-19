@@ -1,6 +1,6 @@
 ROOT_DIR := $(strip $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST)))))
 
-SRC_VERSION := nginx-1.26.3
+SRC_VERSION ?= nginx-1.22.1
 SRC_LINK := "http://nginx.org/download/$(SRC_VERSION).tar.gz"
 
 SRC_PATH := $(ROOT_DIR)/$(SRC_VERSION)
@@ -20,7 +20,7 @@ PID_FILE := $(RUN_PATH)/logs/nginx.pid
 SRC_MKFILE := $(SRC_PATH)/Makefile
 SRC_BIN := $(SRC_PATH)/objs/nginx
 
-CONFIGURE_OPTS := --prefix="$(RUN_PATH)" --with-http_ssl_module
+CONFIGURE_OPTS := $(CONFIGURE_OPTS) --prefix="$(RUN_PATH)" --with-http_ssl_module
 
 # Dev variables
 EXAMPLE_CERT := $(EXAMPLE_DIR)/cert.pem
@@ -49,7 +49,7 @@ source: clean-source
 configure: configure-as-dynamic
 
 build:
-	$(MAKE) -C "$(SRC_PATH)" -j 4
+	$(MAKE) -C "$(SRC_PATH)" -j 3
 
 configure-debug:
 	@test -d $(SRC_PATH) || (echo "You have to run 'make source' first to download the Nginx source code"; exit 2)

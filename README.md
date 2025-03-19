@@ -38,7 +38,7 @@ parsing and creating the JSON strings according to the ACME protocol.
         make run
         ```
 
-    You can later stop the server with:
+      You can later stop the server with:
         ```shell
         make kill
         ```
