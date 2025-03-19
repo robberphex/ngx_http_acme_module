@@ -19,25 +19,30 @@ parsing and creating the JSON strings according to the ACME protocol.
 
 ## Installation
 
+  0. install `libpcre3-dev`,`libssl-dev`,`zlib1g-dev`,`libcurl4-openssl-dev`,`libjansson-dev` if you are on Debian.
+
   1. Download the NginX source code using:
-
+        ```shell
         make source
-
+        ```
   2. Configure, build and install the server with the module:
-
+        ```shell
         make install
+        ```
 
       With this step the server is compiled and installed in the `./run` directory.
       Don't worry, nothing is installed on your system outside this directory.
       
   3. Run the server:
-  
+        ```shell
         make run
+        ```
 
     You can later stop the server with:
-    
+        ```shell
         make kill
-        
+        ```
+
 ## Configuration
 
   * The build process and the directories can be configured in the first few lines of

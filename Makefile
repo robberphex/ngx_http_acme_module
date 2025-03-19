@@ -1,6 +1,6 @@
 ROOT_DIR := $(strip $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST)))))
 
-SRC_VERSION := nginx-1.11.0
+SRC_VERSION := nginx-1.26.3
 SRC_LINK := "http://nginx.org/download/$(SRC_VERSION).tar.gz"
 
 SRC_PATH := $(ROOT_DIR)/$(SRC_VERSION)
@@ -20,10 +20,7 @@ PID_FILE := $(RUN_PATH)/logs/nginx.pid
 SRC_MKFILE := $(SRC_PATH)/Makefile
 SRC_BIN := $(SRC_PATH)/objs/nginx
 
-CONFIGURE_OPTS := --prefix="$(RUN_PATH)" --with-http_ssl_module --add-module="$(ROOT_DIR)"
-
-# For debug output
-CONFIGURE_OPTS := $(CONFIGURE_OPTS) --with-debug
+CONFIGURE_OPTS := --prefix="$(RUN_PATH)" --with-http_ssl_module
 
 # Dev variables
 EXAMPLE_CERT := $(EXAMPLE_DIR)/cert.pem
@@ -41,7 +38,7 @@ ACME_ACC_DIR := $(ACME_DIR)/accounts
 # Phony targets
 #
 
-default: build
+default: build-dynamic
 
 all: source install
 
@@ -49,9 +46,19 @@ source: clean-source
 	mkdir -p "$(SRC_PATH)"
 	curl $(SRC_LINK) | tar xz
 
-configure: $(SRC_MKFILE)
+configure: configure-as-dynamic
 
-build: $(SRC_BIN)
+build:
+	$(MAKE) -C "$(SRC_PATH)" -j 4
+
+configure-debug:
+	@test -d $(SRC_PATH) || (echo "You have to run 'make source' first to download the Nginx source code"; exit 2)
+	cd "$(SRC_PATH)"; ./configure $(CONFIGURE_OPTS) --add-module="$(ROOT_DIR)" --with-debug
+
+configure-as-dynamic:
+	@test -d $(SRC_PATH) || (echo "You have to run 'make source' first to download the Nginx source code"; exit 2)
+	cd "$(SRC_PATH)"; ./configure $(CONFIGURE_OPTS) --add-dynamic-module="$(ROOT_DIR)"
+
 
 install: $(RUN_BIN)
 
@@ -86,14 +93,7 @@ clean-all: clean clean-source
 # File targets
 #
 
-$(SRC_MKFILE): $(MODULE_CFG)
-	@test -d $(SRC_PATH) || (echo "You have to run 'make source' first to download the Nginx source code"; exit 2)
-	cd "$(SRC_PATH)"; ./configure $(CONFIGURE_OPTS)
-
-$(SRC_BIN): $(SRC_MKFILE) $(MODULE_SRC)
-	$(MAKE) -C "$(SRC_PATH)"
-
-$(RUN_BIN): $(SRC_BIN)
+$(RUN_BIN): build
 	$(MAKE) -C "$(SRC_PATH)" install
 	# Install example files
 	cp "$(EXAMPLE_CONFIG)" "$(RUN_CONFIG)"
